@@ -34,7 +34,7 @@ for filename in glob.glob(os.path.join(folder_path, '*.txt')):
             X[ind, Dico[mot]] = X[ind, Dico[mot]] + 1 
         ind = ind + 1    
          
-print(X)
+print(Dico)
 
         
 
