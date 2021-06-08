@@ -22,15 +22,24 @@ def ajout_colonne_de1( X ):
     return b
    
 
-def mise_a_jour_Y ( Y ):
+"""def mise_a_jour_Y ( Y ): # avec np.where ---> juste un vecteur colonne 
     K = np.zeros((len(Y),1))
     for j in range(len(Y)):
         if Y[j][2] == 0:
             K[j][0] = 1
         else :
             K[j][0] = -1
-    return np.hstack((Y,K))
-   
+    return np.hstack((Y,K))"""
+    
+def labels(Y):
+    K = np.zeros((len(Y),1))
+    for j in range(len(Y)):
+        if Y[j][2] == 0:
+            K[j][0] = 1
+        else :
+            K[j][0] = -1
+    return K
+       
 
 """
 def epoque(X_train): #renvoie un tableau
@@ -46,69 +55,100 @@ def epoque(X_train): #renvoie un tableau
     return res"""
    
 def epoque2(X_train): #genere une epoque de facon aleatoire
-    tab = [ i for i in range(len(X_train))]
+    tab = [ i for i in range(len(X_train))] #fonction permute
     Random.shuffle(tab)
     return tab
    
-def cout_L ( w , Y_train , X_train , epoque):
-    """L = [max(0.0,-np.dot(w,X_train[epoque[i]])*Y_train[epoque[i]]) for i in range(len(epoque))]
-    return sum(L)*1./len(epoque)"""
-    L=[]
-    for i in range(len(epoque)):
-        if ( -np.dot(w,X_train[epoque[i]])*Y_train[epoque[i]][3] > 0 ):
-            L.append(-np.dot(w,X_train[epoque[i]])*Y_train[epoque[i]][3])
-        else :
-            L.append(0.0)
-    return sum(L)*1./len(epoque)
+def cout_L ( w , labels, X_train ):
+    a = X_train.dot(w)
+    a = -w*labels
+    L = np.where( a>0 , a , 0.)
+    return np.mean(L)
 
      
-def perceptron_epoque(X_train,Y_train_labelise,w, epsilon, epoque): #calcule la position du vecteur directeur w pour une epoque
-    for i in range(0,len(epoque)):
-        if (np.dot(w,X_train[epoque[i]])*Y_train_labelise[epoque[i]][3]) < 0 :
-            w = np.add(w , epsilon*Y_train_labelise[epoque[i]][3]*X_train[epoque[i]])
+def perceptron_epoque(X_train,labels,w, epsilon, epoque): #calcule la position du vecteur directeur w pour une epoque
+    for i in epoque:
+        if (np.dot(w,X_train[i])*labels[i]) < 0 :
+            w = np.add(w , epsilon*labels[i]*X_train[i])
     return w
    
-def perceptron(X_train, Y_train_labelise, nbEpoques): #graphe du cout en fonction de l'epoque (met a jour w pour nbEpoques differentes generees aleatoirement
+def perceptron(X_train,labels, nbEpoques): #graphe du cout en fonction de l'epoque (met a jour w pour nbEpoques differentes generees aleatoirement
     epsilon = 1 #nous avons teste avec epsilon 1, 0.75, 1.5
     w = np.zeros(len(X_train[0]))
     w[0] = 0.75
     L = []
     for i in range(0,nbEpoques):
         epoquee = epoque2(X_train)
-        w = perceptron_epoque(X_train,Y_train_labelise, w, epsilon, epoquee)
-        L.append(cout_L(w, Y_train_labelise, X_train, epoquee))
-    j = [i for i in range(0,nbEpoques)]
-    return w, j, L
+        w = perceptron_epoque(X_train,labels, w, epsilon, epoquee)
+        L.append(cout_L(w, labels, X_train))
+    return w, L 
     
-def graphe(j,L):
-    plt.plot(j,L) #construction du graphe du cout en fonction de l'epoque
+def graphe(L):
+    #j = [i for i in range(0,len(L))]
+    plt.plot(range(len(L)),L) #construction du graphe du cout en fonction de l'epoque
     plt.xlabel("epoque")
     plt.ylabel("L")
     plt.show()
     
-def retrouveSaison(X_test, X_train, Y_train_labelise, nbEpoques, numeroEp): 
-    w, j, L = perceptron(X_train, Y_train_labelise, nbEpoques)
-    if (np.dot(w, X_test[numeroEp]) < 0):
-        return 1
-    return 0
+def z_fonction(w, point):
+    return np.dot(w, point)
+
+"""def probabilite(z): #probabilite que l'episode numeroEp appartienne a la serie labelise 1, utilise la fonction sigmoide
+    return 1/(1 + math.exp(z))
     
-def performance(X_test, X_train, Y_train_labelise, nbEpoques, Y_test):
-    count = 0
+def fonction_activation(X_test, w):
+    a = []
+    z_liste = []
     for i in range(0,len(X_test)):
-        if (retrouveSaison(X_test, X_train, Y_train_labelise, nbEpoques, i) == Y_test[i][2]):
-            count = count + 1
-    return (count*100)/len(Y_test)
+        z = z_fonction(w,X_test[i])
+        print(z)
+        z_liste.append(z)
+        a.append(probabilite(z))
+    plt.plot(z_liste, a)
+    plt.xlabel("z")
+    plt.ylabel("a(z)")
+    plt.show()"""
+        
+            
+"""def retrouveSerie(X_test, X_train, labels, nbEpoques, numeroEp): 
+    w, L = perceptron(X_train, labels, nbEpoques)
+    if (z(w, X_test[numeroEp]) < 0):
+        return 1
+    return -1
     
+def performance(X_test, X_train, labels, nbEpoques, Y_test): #evaluer la precision
+    count = 0
+    for i in range(0,len(X_test)): #pas de boucle
+        if (retrouveSaison(X_test, X_train, labels, nbEpoques, i) == Y_test[i][2]):
+            count = count + 1
+    return (count*100)/len(Y_test)"""
+    
+def retrouveSerie(X_test, w ):
+    a = X_test.dot(np.transpose(w))
+    return np.where(np.where(a < 0,1,-1))
+   
+def performance(X_test, w , Y_test): #evaluer la precision
+    K = retrouveSerie(X_test, w )
+    L = labels(Y_test)
+    L = np.where(K-L==0)
+    return np.mean(L,axis=0)
+    
+#moyenne d'erreures
+
+#regarder les valeurs de w (quelles sont les plus elevees)    
+#histogramme des valeurs de w (classer les valeurs de w, obtenir une courbe)
+
+#interpreter ce qui sort du classifieur 
+
 
 
 data = np.load("sauvegarde.npz")
 X_train, X_test, Y_train, Y_test = data['name3'],data['name4'],data['name5'],data['name6']
-w, j, L = perceptron(ajout_colonne_de1(X_train),mise_a_jour_Y(Y_train),10)
-#graphe(j, L)
-print("test1")
-print(performance(ajout_colonne_de1(X_test), ajout_colonne_de1(X_train), mise_a_jour_Y(Y_train), 10, Y_test))
-print("test2")
+w, L = perceptron(ajout_colonne_de1(X_train),labels(Y_train),10)
+#graphe(L)
+#print(performance(ajout_colonne_de1(X_test), ajout_colonne_de1(X_train), labels(Y_train), 10, Y_test))
 
+#fonction_activation(ajout_colonne_de1(X_test),w)
     
     
     
