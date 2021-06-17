@@ -14,56 +14,73 @@ from scipy.spatial import distance
 from collections import Counter
 import random as Random
 
-from utilitaire import split
+from utilitaire import split , nb_serie
 from perceptron import ajout_colonne_de1, labels, epoque2, cout_L, perceptron_epoque, perceptron, graphe, z_fonction, retrouveSerie, performance
 
 def labels_multiclasse(numSerie, Y):
-    K = np.zeros((len(Y),1))
-    for j in range(len(Y)):
-        if Y[j][2] == numSerie:
-            K[j][0] = 1
-        else :
-            K[j][0] = -1
+    K = Y[:,2]
+    K = np.where(K==numSerie,1,-1)
     return K
     
                                              
-def multiclasse_epoque(X_train, Y_train, W, epsilon, epoque): #renvoie la matrice W, dont les colonnes sont les vecteurs directeurs w pour chaque serie
-    for serie in range(0,Y_train[len(Y_train)-1][2]-Y_train[0][2]): #on choisit la serie qui sera labelise 1 (toutes les autres seront labelisees -1) 
+def multiclasse_epoque(X_train, Y_train, W, epsilon, epoque , n_serie): #renvoie la matrice W, dont les colonnes sont les vecteurs directeurs w pour chaque serie
+    for serie in range(n_serie): #on choisit la serie qui sera labelise 1 (toutes les autres seront labelisees -1)
         labels = labels_multiclasse(serie, Y_train)
         w = np.zeros(len(X_train[0]))
+        w[0] = 5
         for i in epoque:
             if (np.dot(w,X_train[i])*labels[i]) < 0 :
                 w = np.add(w , epsilon*labels[i]*X_train[i])
-        np.append(w, W)
+        W[serie]=w
     return W
     
+   
 
-def multiclasse_perceptron(X_train, Y_train,  nbEpoques):
-    epsilon = 1 #nous avons teste avec epsilon 1, 0.75, 1.5
-    print(Y_train[len(Y_train)-1][2]-Y_train[0][2])
-    W = np.ones((Y_train[len(Y_train)-1][2]-Y_train[0][2],len(X_train[0])))
+def multiclasse_perceptron(X_train, Y_train, epsilon ,   nbEpoques , n_serie):
+    #epsilon = 1 #nous avons teste avec epsilon 1, 0.75, 1.5
+    W = np.ones((n_serie,len(X_train[0])))
     #W[0][0] = 0.75
     for i in range(0,nbEpoques):
         epoquee = epoque2(X_train)
-        W = multiclasse_epoque(X_train, Y_train, W, epsilon, epoquee)
+        W = multiclasse_epoque(X_train, Y_train, W, epsilon, epoquee, n_serie)
     return W
     
-
-def recherche_serie_multi(X_test, W, nbEpoques):
-    #W = multiclasse_perceptron(X_train, Y_train, nbEpoques)
+    
+def recherche_serie_multi(X_test, W):
     K = W.dot(np.transpose(X_test))
     return np.argmax(K, axis=0)
 
+def matrice_confusion(X_test, Y_test, W, nbSerie):
+    K = np.zeros((nbSerie,nbSerie))
+    Y_prediction = recherche_serie_multi(X_test, W)
+    print(Y_prediction)
+    for i in range(0,len(Y_test)):
+        print(Y_test[i][2])
+        print(Y_prediction[i])
+        K[Y_test[i][2]][Y_prediction[i]] = K[Y_test[i][2]][Y_prediction[i]] + 1
+    return K
     
-def performance_multi(X_test, W , Y_test, nbEpoques): #evaluer la precision
-    K = recherche_serie_multi(X_test, W, nbEpoques )
-    L = labels(Y_test)
-    L = np.where(K-L==0)
-    return np.mean(L,axis=0)
     
+def performance_multi(X_test, W , Y_test): #evaluer la precision
+    K = recherche_serie_multi(X_test, W)
+    L = Y_test[:,2].T
+    c = L-K
+    return (c == 0).sum() *100. / len(c)
+    
+def plot_perf_eps(X_test, Y_test, nbEps,X_train, Y_train , nbEpoques , n_serie):
+    L = []
+    for eps in range(0,nbEps):
+        W = multiclasse_perceptron(X_train, Y_train, eps ,   nbEpoques , n_serie)
+        L.append(performance_multi(X_test,W, Y_test))
+    plt.plot(range(nbEps),L) #construction du graphe du cout en fonction de l'epoque
+    plt.xlabel("epsilon")
+    plt.ylabel("performance")
+    plt.show()
+    return L
 
-data = np.load("sauvegarde.npz")
-X_train, X_test, Y_train, Y_test = data['name3'],data['name4'],data['name5'],data['name6'] 
-  
-W = multiclasse_perceptron(ajout_colonne_de1(X_train), Y_train, 10)
-print(performance_multi(ajout_colonne_de1(X_test), W, Y_test,10))
+        
+data = np.load("sauvegarde_multi.npz")
+X_train, X_test, Y_train, Y_test = data['name3'],data['name4'],data['name5'],data['name6']   
+W = multiclasse_perceptron(ajout_colonne_de1(X_train), Y_train, 1, 10,10)
+print(matrice_confusion(ajout_colonne_de1(X_test), Y_test, W, 10))
+print(performance_multi(ajout_colonne_de1(X_test), W, Y_test))
