@@ -21,38 +21,11 @@ def ajout_colonne_de1( X ):
     b = np.hstack((np.ones((X.shape[0], 1), dtype=X.dtype) , X))
     return b
    
-
-"""def mise_a_jour_Y ( Y ): # avec np.where ---> juste un vecteur colonne 
-    K = np.zeros((len(Y),1))
-    for j in range(len(Y)):
-        if Y[j][2] == 0:
-            K[j][0] = 1
-        else :
-            K[j][0] = -1
-    return np.hstack((Y,K))"""
-    
 def labels(Y):
-    K = np.zeros((len(Y),1))
-    for j in range(len(Y)):
-        if Y[j][2] == 0:
-            K[j][0] = 1
-        else :
-            K[j][0] = -1
+    K = Y[:,2]
+    K = np.where(K==0,1,-1)
     return K
        
-
-"""
-def epoque(X_train): #renvoie un tableau
-    tabBool = [False for i in range(0,len(X_train))]
-    res = []
-    cpt = 0
-    while cpt < len(X_train):
-        r = Random.randint(0,len(X_train)-1)
-        if (tabBool[r] != True):
-            res.append(r)
-            cpt= cpt+1
-            tabBool[r] = True
-    return res"""
    
 def epoque2(X_train): #genere une epoque de facon aleatoire
     tab = [ i for i in range(len(X_train))] #fonction permute
@@ -60,8 +33,8 @@ def epoque2(X_train): #genere une epoque de facon aleatoire
     return tab
    
 def cout_L ( w , labels, X_train ):
-    a = X_train.dot(w)
-    a = -w*labels
+    a = X_train.dot(w.T)
+    a = -a*labels
     L = np.where( a>0 , a , 0.)
     return np.mean(L)
 
@@ -133,11 +106,11 @@ def performance(X_test, w , Y_test): #evaluer la precision
     L = np.where(K-L==0)
     return np.mean(L,axis=0)
     
-#moyenne d'erreures
 
+    
+#moyenne d'erreures
 #regarder les valeurs de w (quelles sont les plus elevees)    
 #histogramme des valeurs de w (classer les valeurs de w, obtenir une courbe)
-
 #interpreter ce qui sort du classifieur 
 
 
