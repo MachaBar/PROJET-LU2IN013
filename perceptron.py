@@ -5,6 +5,7 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.tri as tri
 from tempfile import TemporaryFile
+import pickle
 import nltk
 #nltk.download('stopwords')
 from nltk.corpus import stopwords
@@ -63,38 +64,6 @@ def graphe(L):
     plt.ylabel("L")
     plt.show()
     
-def z_fonction(w, point):
-    return np.dot(w, point)
-
-"""def probabilite(z): #probabilite que l'episode numeroEp appartienne a la serie labelise 1, utilise la fonction sigmoide
-    return 1/(1 + math.exp(z))
-    
-def fonction_activation(X_test, w):
-    a = []
-    z_liste = []
-    for i in range(0,len(X_test)):
-        z = z_fonction(w,X_test[i])
-        print(z)
-        z_liste.append(z)
-        a.append(probabilite(z))
-    plt.plot(z_liste, a)
-    plt.xlabel("z")
-    plt.ylabel("a(z)")
-    plt.show()"""
-        
-            
-"""def retrouveSerie(X_test, X_train, labels, nbEpoques, numeroEp): 
-    w, L = perceptron(X_train, labels, nbEpoques)
-    if (z(w, X_test[numeroEp]) < 0):
-        return 1
-    return -1
-    
-def performance(X_test, X_train, labels, nbEpoques, Y_test): #evaluer la precision
-    count = 0
-    for i in range(0,len(X_test)): #pas de boucle
-        if (retrouveSaison(X_test, X_train, labels, nbEpoques, i) == Y_test[i][2]):
-            count = count + 1
-    return (count*100)/len(Y_test)"""
     
 def retrouveSerie(X_test, w ):
     a = X_test.dot(np.transpose(w))
@@ -106,22 +75,46 @@ def performance(X_test, w , Y_test): #evaluer la precision
     L = np.where(K-L==0)
     return np.mean(L,axis=0)
     
+def mots_moins_influents(w , dico):
+    print("Mots les moins influents")
+    k = np.argsort(w)
+    #plus influents
+    l1 = k[:40]
+    keys = [key for key in dico]
+    return [keys[i] for i in l1]
+
+def mots_plus_influents(w , dico):
+    print("Mots les plus influents")
+    k = np.argsort(w)
+    #plus influents
+    l1 = k[-40:]
+    keys = [key for key in dico]
+    return [keys[i] for i in l1] 
+
+def epsilon_perceptron(X_train,labels , nbepsilon , nbEpoques ):
+    w = np.zeros(len(X_train[0]))
+    w[0] = 0.75
+    L = []
+    epoquee = epoque2(X_train)
+    for e in range(0,nbepsilon):
+        w = perceptron_epoque(X_train,labels, w, e, epoquee)
+        L.append(cout_L(w, labels, X_train))
+    return L 
+    
 
     
-#moyenne d'erreures
-#regarder les valeurs de w (quelles sont les plus elevees)    
-#histogramme des valeurs de w (classer les valeurs de w, obtenir une courbe)
-#interpreter ce qui sort du classifieur 
-
-
-
-data = np.load("sauvegarde.npz")
+data = np.load("sauvegarde_serie_similaires.npz")
 X_train, X_test, Y_train, Y_test = data['name3'],data['name4'],data['name5'],data['name6']
+with open("myDictionary.pkl", "rb") as tf:
+    dico = pickle.load(tf)
 w, L = perceptron(ajout_colonne_de1(X_train),labels(Y_train),10)
 #graphe(L)
-#print(performance(ajout_colonne_de1(X_test), ajout_colonne_de1(X_train), labels(Y_train), 10, Y_test))
+print(performance(ajout_colonne_de1(X_test),w, Y_test))
 
-#fonction_activation(ajout_colonne_de1(X_test),w)
+print(mots_moins_influents(w, dico))
+print(mots_plus_influents(w , dico))
+
+
     
     
     
