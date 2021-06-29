@@ -101,8 +101,7 @@ def epsilon_perceptron(X_train,labels , nbepsilon , nbEpoques ):
         w = perceptron_epoque(X_train,labels, w, e, epoquee)
         L.append(cout_L(w, labels, X_train))
     return L 
- 
-#je suis sur qu'on peut le faire sans boucles, mais je suis con   
+  
 def labels_reco(Xa): #les series de numero paire sont les series aimes (label 1), les autres ne sont pas aimes (-1)
     L = []
     for i in range(0, len(Xa)):
