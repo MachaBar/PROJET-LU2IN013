@@ -27,9 +27,7 @@ def preprocessing(T):#T est une liste de chaines de caracteres (chaque chaine de
     L = [re.findall(pattern,c) for c in T]
     listeMotsProcessed = [ [mot.lower() for mot in liste if len(mot)>2 and (mot.lower() not in stop_words_list)] for liste in L]
     return listeMotsProcessed
-    
-T,Y = lecture_fichier("/home/baranova/Bureau/L2/LU2IN013/series")   
-
+ 
 
    
 """def BoW(m): #Renvoie X et Dico
@@ -96,7 +94,7 @@ def matriceX_Dico_processed_inverse(X,D,invDocFreq):
     #prend en argument la matrice X et la liste des, et enleve les colonnes (mots) qui ne sont pas pertinants grace a l'analyse de word frequency
     vect = np.array(invDocFreq)
     ind = np.argsort(vect)
-    ind = ind[:int(len(ind)*0.02)]
+    ind = ind[:int(len(ind)*0.1)]
     X = np.delete(X, ind, axis = 1) # on supprime la ieme colonne de X
     keys = [key for key in D if D[key] in ind]
     #k = [keys[i] for i in L]
@@ -106,9 +104,35 @@ def matriceX_Dico_processed_inverse(X,D,invDocFreq):
 def mots_recurrents(X,D,invDocFreq): 
     vect = np.array(invDocFreq)
     ind = np.argsort(vect)
-    ind = ind[:int(len(ind)*0.02)]
+    ind = ind[:int(len(ind)*0.1)]
     keys = [key for key in D]
     return [keys[i] for i in ind] 
+    
+    
+def matrice_agreg(X,Y,nbserie):
+    Xa = np.zeros((nbserie,len(X[0])))
+    for s in range(nbserie):
+        y = Y[:,2]
+        L = np.where(y==s)[0]
+        cpt=0
+        p=[]
+        for j in range(0,len(X[0])):
+            for i in L:
+                cpt = cpt + X[i,j]
+            p.append(cpt*1./len(L))
+            cpt=0
+        #f = np.array([np.mean(X[L[0]:L[len(L)-1],i]) for i in range(len(X[0]))])
+        Xa[s]=p
+    return Xa
+    
+"""def matrice_agreg(X,Y,nbserie):
+    Xa = np.zeros((nbserie,len(X[0])))
+    for s in range(nbserie):
+        y = Y[:,2]
+        L = np.where(y==s)[0]
+        f = np.array([np.mean(X[L[0]:L[len(L)-1],i]) for i in range(len(X[0]))])
+        Xa[s]=f
+    return Xa"""
     
 #tests
 

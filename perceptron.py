@@ -15,7 +15,8 @@ from scipy.spatial import distance
 from collections import Counter
 import random as Random
 
-from utilitaire import split
+from utilitaire import split, split_agreg
+from preprocessing import preprocessing, BoW, document_frequency, matriceX_Dico_processed, inverse_doc_frequency, remove_keys, matriceX_Dico_processed_inverse, mots_recurrents,matrice_agreg
 
 
 def ajout_colonne_de1( X ):
@@ -100,9 +101,41 @@ def epsilon_perceptron(X_train,labels , nbepsilon , nbEpoques ):
         w = perceptron_epoque(X_train,labels, w, e, epoquee)
         L.append(cout_L(w, labels, X_train))
     return L 
+ 
+#je suis sur qu'on peut le faire sans boucles, mais je suis con   
+def labels_reco(Xa): #les series de numero paire sont les series aimes (label 1), les autres ne sont pas aimes (-1)
+    L = []
+    for i in range(0, len(Xa)):
+        if (i%2==0):
+            L.append(1)
+        else:
+            L.append(-1)
+    K = np.array(L)
+    return K
     
-
+def score_series(X, w):
+    return X.dot(w.T)
     
+def reco_serie(etiquettes, scores):
+    scores_ind = np.sort(scores)
+    scores_ind = np.where(scores_ind)
+    reco = []
+    for i in scores_ind :
+        reco.append(etiquettes[i])
+    return reco
+    
+"""def reco_serie_score(etiquettes, scores):
+    scores_ind = np.sort(scores)
+    scores_ind = np.where(scores_ind)
+    reco = []
+    for i in scores_ind :
+        reco.append(etiquettes[i])
+    return reco"""
+        
+    
+   
+"""
+#classif    
 data = np.load("sauvegarde_serie_similaires.npz")
 X_train, X_test, Y_train, Y_test = data['name3'],data['name4'],data['name5'],data['name6']
 with open("myDictionary.pkl", "rb") as tf:
@@ -113,6 +146,21 @@ print(performance(ajout_colonne_de1(X_test),w, Y_test))
 
 print(mots_moins_influents(w, dico))
 print(mots_plus_influents(w , dico))
+"""
+
+#reco
+data = np.load("sauvegarde_multi_10.npz")
+X = data['name1']
+Y = data['name2']
+Xa = matrice_agreg(X,Y,10)
+Xa_train, Xa_test  = split_agreg(Xa)
+print(Xa_train)
+w, L = perceptron(Xa_train,labels_reco(Xa_train), 5)
+with open("myEtiquette.pkl", "rb") as tf:
+    etiquettes = pickle.load(tf)
+print(score_series(Xa_test,w))
+
+print(reco_serie(etiquettes,score_series(Xa_test,w) ))
 
 
     

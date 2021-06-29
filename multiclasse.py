@@ -14,7 +14,7 @@ from scipy.spatial import distance
 from collections import Counter
 import random as Random
 
-from utilitaire import split , nb_serie
+from utilitaire import split , nb_serie, split_agreg
 from perceptron import ajout_colonne_de1, labels, epoque2, cout_L, perceptron_epoque, perceptron, graphe, z_fonction, retrouveSerie, performance
 
 def labels_multiclasse(numSerie, Y):
