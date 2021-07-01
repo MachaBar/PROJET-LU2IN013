@@ -7,7 +7,7 @@ Ce projet nommé "Recommandation et analyse de sous-titres" a pour objectif de p
 Dans une première partie, nous avons traîtés les fichiers textuels fournis, en utilisant les outils de prétraitement connus tels que les listes des Stop Words,  les Regular Expressions ou encore les fréquences TF/IDF. Cette partie est présentée dans les fichiers ouvertureFichiers.py et preprocessing.py.
 
 Nous avons par la suite formé notre Data Set, puis les matrices de distances et de similarité. (Fichiers preprocessing.py, creationMatricesDistances.py)
-Cette partie nous a paru spécialement passionnante, car la représentation de données textuelles abstraites n'est en effet pas une chose triviale. Elle nous a également permis d'apprécier les avantages de notre background mathématique pouvant sembler parfois trop théorique.
+Cette partie nous a paru spécialement intéressante, car la représentation de données textuelles abstraites n'est en effet pas une chose triviale. Elle nous a également permis d'apprécier les avantages de notre background mathématique pouvant sembler parfois trop théorique.
 
 Dans un deuxième temps, nous nous sommes intéressées aux algorithmes d'apprentissage supervisé afin de réaliser une classification de nos données. Nous avons implémenté les algorithmes classiques: des k plus proches voisins (fichier classification.py), perceptron (fichier perceptron.py) et percreptron multiclasse (fichier multiclasse.py). Nous avons également fait attention à respecter tout au long de notre travail la règle fondamentale de l'apprentissage supérvisé: la subdivision de notre corpus en un ensemble d'apprentissage et de test. (Fichier utilitaire.py).
 
